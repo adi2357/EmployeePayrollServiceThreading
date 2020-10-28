@@ -3,6 +3,7 @@ package com.bridgelabz.payrollservice;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 import com.bridgelabz.exceptions.DBException;
@@ -64,6 +65,12 @@ public class EmployeePayrollService {
 				e.printStackTrace();
 			}
 		}
+		return null;
+	}
+
+	public Map<String, Double> readAverageSalaryByGender(IOService ioType) {
+		if (ioType.equals(IOService.DB_IO))
+			return employeePayrollDBService.readAverageSalaryByGender();
 		return null;
 	}
 

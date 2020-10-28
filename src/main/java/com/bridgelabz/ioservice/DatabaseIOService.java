@@ -9,7 +9,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.bridgelabz.exceptions.DBException;
 import com.bridgelabz.model.EmployeePayrollData;
@@ -70,6 +72,11 @@ public class DatabaseIOService {
 		String sql = String.format("select * from employee_payroll where start between '%s' and '%s';",
 									Date.valueOf(startDate), Date.valueOf(endDate));
 		return this.getEmplyoeePayrollDataUsingDB(sql);
+	}
+
+	public Map<String, Double> readAverageSalaryByGender() {
+		Map<String, Double> genderToAverageSalaryMap = new HashMap<>();
+		return genderToAverageSalaryMap;
 	}
 
 	private List<EmployeePayrollData> getEmplyoeePayrollDataUsingDB(String sql) throws DBException {
