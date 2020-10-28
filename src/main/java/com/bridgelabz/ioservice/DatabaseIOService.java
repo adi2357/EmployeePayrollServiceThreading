@@ -1,6 +1,7 @@
 package com.bridgelabz.ioservice;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -48,26 +49,17 @@ public class DatabaseIOService {
 
 	public List<EmployeePayrollData> readData() throws DBException {
 		String sql = "select * from employee_payroll;";
-		List<EmployeePayrollData> employeePayrollList = null;
-		try (Connection connection = this.establishConnection()) {
-			System.out.println("Connection is successfull!!! " + connection);
-			Statement statement = connection.createStatement();
-			ResultSet resultSet = statement.executeQuery(sql);
-			employeePayrollList = this.getEmplyoeePayrollData(resultSet);
-		} catch (SQLException e) {
-			throw new DBException("Cannot establish connection",DBException.ExceptionType.CONNECTION_FAIL);
-		}
-		return employeePayrollList;
+		return this.getEmplyoeePayrollDataUsingDB(sql);
 	}
 
-	public List<EmployeePayrollData> getEmplyoeePayrollData(String name) throws DBException {
+	public List<EmployeePayrollData> getEmplyoeePayrollDataUsingName(String name) throws DBException {
 		List<EmployeePayrollData> employeePayrollList = null;
 		if(this.employeePayrollDataStatement == null)
 			this.prepareStatementForEmployeeData();
 		try {
 			employeePayrollDataStatement.setString(1, name);
 			ResultSet resultSet = employeePayrollDataStatement.executeQuery();
-			employeePayrollList = this.getEmplyoeePayrollData(resultSet);			
+			employeePayrollList = this.getEmplyoeePayrollDataUsingResultSet(resultSet);			
 		} catch (SQLException e) {
 			throw new DBException("Cannot execute query", DBException.ExceptionType.SQL_ERROR);
 		}
@@ -75,11 +67,25 @@ public class DatabaseIOService {
 	}
 
 	public List<EmployeePayrollData> readEmployeeDataForDateRange(LocalDate startDate, LocalDate endDate) throws DBException {
-		List<EmployeePayrollData> employeePayrollList = new ArrayList<EmployeePayrollData>();
+		String sql = String.format("select * from employee_payroll where start between '%s' and '%s';",
+									Date.valueOf(startDate), Date.valueOf(endDate));
+		return this.getEmplyoeePayrollDataUsingDB(sql);
+	}
+
+	private List<EmployeePayrollData> getEmplyoeePayrollDataUsingDB(String sql) throws DBException {
+		List<EmployeePayrollData> employeePayrollList = null;
+		try (Connection connection = this.establishConnection()) {
+			System.out.println("Connection is successfull!!! " + connection);
+			Statement statement = connection.createStatement();
+			ResultSet resultSet = statement.executeQuery(sql);
+			employeePayrollList = this.getEmplyoeePayrollDataUsingResultSet(resultSet);
+		} catch (SQLException e) {
+			throw new DBException("Cannot establish connection",DBException.ExceptionType.CONNECTION_FAIL);
+		}
 		return employeePayrollList;
 	}
 
-	private List<EmployeePayrollData> getEmplyoeePayrollData(ResultSet resultSet) throws DBException {
+	private List<EmployeePayrollData> getEmplyoeePayrollDataUsingResultSet(ResultSet resultSet) throws DBException {
 		List<EmployeePayrollData> employeePayrollList = new ArrayList<EmployeePayrollData>();
 		try {
 			while (resultSet.next()) {
