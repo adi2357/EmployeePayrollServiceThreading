@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+import com.bridgelabz.exceptions.DBException;
+import com.bridgelabz.ioservice.DatabaseIOService;
 import com.bridgelabz.ioservice.FileIOService;
 import com.bridgelabz.model.EmployeePayrollData;
 
@@ -41,6 +43,13 @@ public class EmployeePayrollService {
 			employeePayrollList.add(newEmployee);
 		} else if (ioType.equals(IOService.FILE_IO))
 			this.employeePayrollList = new FileIOService().readData();
+		else if (ioType.equals(IOService.DB_IO)) {
+			try {
+				this.employeePayrollList = new DatabaseIOService().readData();
+			} catch (DBException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	public void writeEmployeeData(IOService ioType) {
@@ -61,6 +70,7 @@ public class EmployeePayrollService {
 	public void printEmployeePayrollData(IOService ioType) {
 		if (ioType.equals(IOService.FILE_IO))
 			new FileIOService().printEmployeePayrolls();
+		else
+			this.employeePayrollList.stream().forEach(employeeData -> System.out.println(employeeData.toString()));
 	}
-
 }
