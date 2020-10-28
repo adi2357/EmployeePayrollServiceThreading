@@ -17,12 +17,15 @@ public class EmployeePayrollService {
 
 	public static final Scanner SC = new Scanner(System.in);
 	private List<EmployeePayrollData> employeePayrollList;
+	private DatabaseIOService employeePayrollDBService;
 
 	public EmployeePayrollService() {
 		this.employeePayrollList = new ArrayList<EmployeePayrollData>();
+		employeePayrollDBService = DatabaseIOService.getInstatnce();
 	}
 
 	public EmployeePayrollService(List<EmployeePayrollData> employeeList) {
+		this();
 		this.employeePayrollList = employeeList;
 	}
 
@@ -45,7 +48,7 @@ public class EmployeePayrollService {
 			this.employeePayrollList = new FileIOService().readData();
 		else if (ioType.equals(IOService.DB_IO)) {
 			try {
-				this.employeePayrollList = new DatabaseIOService().readData();
+				this.employeePayrollList = employeePayrollDBService.readData();
 			} catch (DBException e) {
 				e.printStackTrace();
 			}
@@ -53,7 +56,7 @@ public class EmployeePayrollService {
 	}
 
 	public void updateEmployeeSalary(String name, double salary) throws DBException {
-		int result = new DatabaseIOService().updateEmployeeData(name, salary);
+		int result = employeePayrollDBService.updateEmployeeData(name, salary);
 		if(result == 0)
 			throw new DBException("Cannot update the employee payroll data", DBException.ExceptionType.UPDATE_ERROR);
 		EmployeePayrollData employeePayrollData = this.getEmployeePayrollData(name);
@@ -71,7 +74,7 @@ public class EmployeePayrollService {
 	}
 
 	public boolean checkEmployeePayrollInSyncWithDB(String name) throws DBException {
-		List<EmployeePayrollData> employeePayrollDataList = new DatabaseIOService().getEmplyoeePayrollData(name);
+		List<EmployeePayrollData> employeePayrollDataList = employeePayrollDBService.getEmplyoeePayrollData(name);
 		return employeePayrollDataList.get(0).equals(getEmployeePayrollData(name));
 	}
 
