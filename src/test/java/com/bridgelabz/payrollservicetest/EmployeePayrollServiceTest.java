@@ -44,7 +44,7 @@ public class EmployeePayrollServiceTest {
 		payrollServiceObject.readEmployeeData(IOService.DB_IO);
 		int countOfEntriesRetrieved = payrollServiceObject.sizeOfEmployeeList();
 		payrollServiceObject.printEmployeePayrollData(IOService.DB_IO);
-		Assert.assertEquals(5, countOfEntriesRetrieved);
+		Assert.assertEquals(6, countOfEntriesRetrieved);
 	}
 
 	@Test
@@ -67,7 +67,7 @@ public class EmployeePayrollServiceTest {
 		LocalDate startDate = LocalDate.of(2019, 01, 01);
 		LocalDate endDate = LocalDate.now();
 		List<EmployeePayrollData> employeePayrollData = payrollServiceObject.readEmployeeDataForDateRange(IOService.DB_IO, startDate, endDate);
-		Assert.assertEquals(3, employeePayrollData.size());
+		Assert.assertEquals(4, employeePayrollData.size());
 	}
 
 	@Test
@@ -75,7 +75,7 @@ public class EmployeePayrollServiceTest {
 		EmployeePayrollService payrollServiceObject = new EmployeePayrollService();
 		payrollServiceObject.readEmployeeData(IOService.DB_IO);
 		Map<String, Double> averageSalaryByGender = payrollServiceObject.readAverageSalaryByGender(IOService.DB_IO);
-		Assert.assertTrue(averageSalaryByGender.get("M").equals(1500000.0) && 
+		Assert.assertTrue(averageSalaryByGender.get("M").equals(2000000.0) && 
 						  averageSalaryByGender.get("F").equals(3000000.0));
 	}
 
@@ -84,7 +84,7 @@ public class EmployeePayrollServiceTest {
 		try {
 			EmployeePayrollService payrollServiceObject = new EmployeePayrollService();
 			payrollServiceObject.readEmployeeData(IOService.DB_IO);
-			payrollServiceObject.addEmployeeToPayroll("Mark", 5000000.0, LocalDate.now(), "M");
+			payrollServiceObject.addEmployeeToPayroll("Mark", 3000000.0, LocalDate.now(), "M");
 			boolean result = payrollServiceObject.checkEmployeePayrollInSyncWithDB("Mark");
 			Assert.assertTrue(result);
 		}catch (Exception e) {

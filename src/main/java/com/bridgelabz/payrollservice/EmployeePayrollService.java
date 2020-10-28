@@ -110,9 +110,13 @@ public class EmployeePayrollService {
 		}
 	}
 
-	public void addEmployeeToPayroll(String string, double salary, LocalDate startDate, String gender) {
-		// TODO Auto-generated method stub
-		
+	public void addEmployeeToPayroll(String name, double salary, LocalDate startDate, String gender) {
+		try {
+			if(this.getEmployeePayrollData(name) == null)
+				this.employeePayrollList.add(employeePayrollDBService.addEmployeeToPayroll(name, salary, startDate, gender));
+		} catch (DBException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public long countEnteries(IOService ioType) {
