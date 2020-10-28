@@ -70,7 +70,11 @@ public class EmployeePayrollService {
 
 	public Map<String, Double> readAverageSalaryByGender(IOService ioType) {
 		if (ioType.equals(IOService.DB_IO))
-			return employeePayrollDBService.readAverageSalaryByGender();
+			try {
+				return employeePayrollDBService.readAverageSalaryByGender();
+			} catch (DBException e) {
+				e.printStackTrace();
+			}
 		return null;
 	}
 
