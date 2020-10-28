@@ -110,6 +110,11 @@ public class EmployeePayrollService {
 		}
 	}
 
+	public void addEmployeeToPayroll(String string, double salary, LocalDate startDate, String gender) {
+		// TODO Auto-generated method stub
+		
+	}
+
 	public long countEnteries(IOService ioType) {
 		if (ioType.equals(IOService.FILE_IO))
 			return new FileIOService().countEntries();
