@@ -15,12 +15,12 @@ import com.bridgelabz.model.EmployeePayrollData;
 public class DatabaseIOService {
 
 	public List<EmployeePayrollData> readData() throws DBException {
-		String query = "select * from employee_payroll;";
+		String sql = "select * from employee_payroll;";
 		List<EmployeePayrollData> employeePayrollList = new ArrayList<EmployeePayrollData>();
 		try (Connection connection = this.establishConnection()) {
 			System.out.println("Connection is successfull!!! " + connection);
 			Statement statement = connection.createStatement();
-			ResultSet resultSet = statement.executeQuery(query);
+			ResultSet resultSet = statement.executeQuery(sql);
 			while(resultSet.next()) {
 				int id = resultSet.getInt("id");
 				String name = resultSet.getString("name");
@@ -32,6 +32,11 @@ public class DatabaseIOService {
 			throw new DBException("Cannot establish connection",DBException.ExceptionType.CONNECTION_FAIL);
 		}
 		return employeePayrollList;
+	}
+
+	public int updateEmployeeData(String name, double salary) {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 
 	private Connection establishConnection() throws SQLException {

@@ -52,6 +52,14 @@ public class EmployeePayrollService {
 		}
 	}
 
+	public void updateEmployeeSalary(String name, double salary) {
+		int result = new DatabaseIOService().updateEmployeeData(name, salary);
+	}
+
+	public boolean checkEmployeePayrollInSyncWithDB(String string) {
+		return false;
+	}
+
 	public void writeEmployeeData(IOService ioType) {
 		if (ioType.equals(IOService.CONSOLE_IO)) {
 			for (EmployeePayrollData o : employeePayrollList)
