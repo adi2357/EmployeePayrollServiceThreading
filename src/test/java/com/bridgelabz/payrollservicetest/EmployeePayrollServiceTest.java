@@ -1,6 +1,8 @@
 package com.bridgelabz.payrollservicetest;
 
+import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -55,5 +57,15 @@ public class EmployeePayrollServiceTest {
 		}catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	@Test
+	public void givenDateRange_WhenRetrieved_ShouldMatchEmployeeCount() {
+		EmployeePayrollService payrollServiceObject = new EmployeePayrollService();
+		payrollServiceObject.readEmployeeData(IOService.DB_IO);
+		LocalDate startDate = LocalDate.of(2019, 01, 01);
+		LocalDate endDate = LocalDate.now();
+		List<EmployeePayrollData> employeePayrollData = payrollServiceObject.readEmployeeDataForDateRange(IOService.DB_IO, startDate, endDate);
+		Assert.assertEquals(3, employeePayrollData.size());
 	}
 }

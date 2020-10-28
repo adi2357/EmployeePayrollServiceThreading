@@ -74,6 +74,11 @@ public class DatabaseIOService {
 		return employeePayrollList;
 	}
 
+	public List<EmployeePayrollData> readEmployeeDataForDateRange(LocalDate startDate, LocalDate endDate) throws DBException {
+		List<EmployeePayrollData> employeePayrollList = new ArrayList<EmployeePayrollData>();
+		return employeePayrollList;
+	}
+
 	private List<EmployeePayrollData> getEmplyoeePayrollData(ResultSet resultSet) throws DBException {
 		List<EmployeePayrollData> employeePayrollList = new ArrayList<EmployeePayrollData>();
 		try {
@@ -107,6 +112,7 @@ public class DatabaseIOService {
 		}
 	}
 
+	@SuppressWarnings("unused")
 	private int updateEmployeeDataUsingStatement(String name, double salary) throws DBException {
 		String sql = String.format("update employee_payroll set salary = %.2f where name = '%s'", salary, name);
 		try (Connection connection = this.establishConnection()) {
