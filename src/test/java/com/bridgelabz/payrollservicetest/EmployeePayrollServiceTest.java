@@ -1,12 +1,10 @@
 package com.bridgelabz.payrollservicetest;
 
 import java.util.Arrays;
-import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.bridgelabz.exceptions.DBException;
 import com.bridgelabz.model.EmployeePayrollData;
 import com.bridgelabz.payrollservice.EmployeePayrollService;
 import com.bridgelabz.payrollservice.EmployeePayrollService.IOService;
@@ -48,10 +46,14 @@ public class EmployeePayrollServiceTest {
 
 	@Test
 	public void givenNewSalaryForEmployee_WhenUpdated_ShouldSyncWithDB() {
-		EmployeePayrollService payrollServiceObject = new EmployeePayrollService();
-		payrollServiceObject.readEmployeeData(IOService.DB_IO);
-		payrollServiceObject.updateEmployeeSalary("Teresa", 3000000.0);
-		boolean result = payrollServiceObject.checkEmployeePayrollInSyncWithDB("Teresa");
-		Assert.assertTrue(result);
+		try {
+			EmployeePayrollService payrollServiceObject = new EmployeePayrollService();
+			payrollServiceObject.readEmployeeData(IOService.DB_IO);
+			payrollServiceObject.updateEmployeeSalary("Teresa", 3000000.0);
+			boolean result = payrollServiceObject.checkEmployeePayrollInSyncWithDB("Teresa");
+			Assert.assertTrue(result);
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 }
