@@ -44,7 +44,7 @@ public class DatabaseIOService {
 					+ "from employee "
 					+ "inner join company		on company.id = employee.company_id "
 					+ "inner join payroll		on payroll.employee_id = employee.id "
-					+ "where employee.name = ?;";
+					+ "where employee.is_active = true and employee.name = ?;";
 		try {
 			Connection connection = this.establishConnection();
 			System.out.println("Connection is successfull!!! " + connection);
@@ -58,7 +58,8 @@ public class DatabaseIOService {
 		String sql ="select company.name as company_name, employee.id as employee_id, employee.name as employee_name, employee.gender as gender, payroll.basic_pay as basic_pay "
 				+ "from employee "
 				+ "inner join company		on company.id = employee.company_id "
-				+ "inner join payroll		on payroll.employee_id = employee.id; ";
+				+ "inner join payroll		on payroll.employee_id = employee.id "
+				+ "where employee.is_active = true; ";
 		return this.getEmplyoeePayrollDataUsingDB(sql);
 	}
 
@@ -82,7 +83,7 @@ public class DatabaseIOService {
 				+ "from employee "
 				+ "inner join company				on company.id = employee.company_id "
 				+ "inner join payroll				on payroll.employee_id = employee.id "
-				+ "where employee.id in "
+				+ "where employee.is_active = true and employee.id in "
 				+ "(select employee_id from employee_department "
 				+ "where start_date between '%s' and '%s');",Date.valueOf(startDate), Date.valueOf(endDate));
 		return this.getEmplyoeePayrollDataUsingDB(sql);
@@ -93,6 +94,7 @@ public class DatabaseIOService {
 				+ "from employee "
 				+ "inner join payroll "
 				+ "on employee.id = payroll.employee_id "
+				+ "where employee.is_active = true "
 				+ "group by employee.gender;";
 		Map<String, Double> genderToAverageSalaryMap = new HashMap<>();
 		try (Connection connection = this.establishConnection()) {
@@ -145,7 +147,7 @@ public class DatabaseIOService {
 											 + "from employee "
 											 + "inner join employee_department	on employee.id = employee_department.employee_id "
 											 + "inner join department			on employee_department.department_id = department.id "
-											 + "where employee.id = %s;",id);
+											 + "where employee.is_active = true and employee.id = %s;",id);
 					Statement statement = connection.createStatement();
 					ResultSet resultSetForDepartmentNameAndStartDate = statement.executeQuery(sql);
 					while(resultSetForDepartmentNameAndStartDate.next()) {
@@ -175,7 +177,7 @@ public class DatabaseIOService {
 		String sql = "update payroll set basic_pay = ? where employee_id = "
 				+ "(select employee.id "
 				+ "from employee "
-				+ "where name = ?);";
+				+ "where name = ? and is_active = true);";
 		try (Connection connection = this.establishConnection()){
 			System.out.println("Connection is successfull!!! " + connection);
 			PreparedStatement employeePayrollUpdateStatement = connection.prepareStatement(sql);
@@ -192,7 +194,7 @@ public class DatabaseIOService {
 		String sql = String.format("update payroll set basic_pay = %.2f where employee_id = "
 				+ "(select employee.id "
 				+ "from employee "
-				+ "where name = '%s');", salary, name);
+				+ "where name = '%s' and is_active = true);", salary, name);
 		try (Connection connection = this.establishConnection()) {
 			System.out.println("Connection is successfull!!! " + connection);
 			Statement statement = connection.createStatement();
@@ -280,7 +282,7 @@ public class DatabaseIOService {
 			ResultSet resultSetToRetrievePhone = statementToRetrievePhone.executeQuery(sqlToRetrievePhone);
 			while(resultSetToRetrievePhone.next()) {
 				phoneNumberList.add(resultSetToRetrievePhone.getString("phone_number"));
-				System.out.println("Phone number retrieved  YES");
+				System.out.println("Phone number retrieved : YES");
 			}if(!phoneNumberList.contains(phoneNumber)) {
 				String sqlToInsert = String.format("insert into employee_phone (employee_id, phone_number) values "
 										 + "('%s', '%s');", employeeId, phoneNumber);
@@ -288,7 +290,7 @@ public class DatabaseIOService {
 				if(phoneRowsUpdated == 1) {
 					phoneNumberList.add(phoneNumber);
 				}
-				System.out.println("Phone number inserted  YES");
+				System.out.println("Phone number inserted : YES");
 			}
 		} catch (SQLException e) {
 			try {
@@ -331,6 +333,7 @@ public class DatabaseIOService {
 			while(resultSetToRetrieveDateAndDepartment.next()) {
 				startDateList.add(resultSetToRetrieveDateAndDepartment.getDate("start_date").toLocalDate());
 				departmentNameList.add(resultSetToRetrieveDateAndDepartment.getString("department_name"));
+				System.out.println("Start date and Department name Retrieved : YES");
 			}if(!startDateList.contains(startDate) || !departmentNameList.contains(departmentName)) {
 				String sqlToInsert = String.format("insert into employee_department (start_date, department_id, employee_id) values "
 										 + "( '%s', %s, %s);", Date.valueOf(startDate), departmentId, employeeId);
@@ -338,6 +341,7 @@ public class DatabaseIOService {
 				if(employeeDepartmentRowsUpdated == 1) {
 					startDateList.add(startDate);
 					departmentNameList.add(departmentName);
+					System.out.println("Start date and Department name Inserted : YES");
 				}
 			}
 		} catch (SQLException e) {
@@ -353,8 +357,10 @@ public class DatabaseIOService {
 			String sql = String.format("insert into payroll (employee_id, basic_pay, deductions, income_tax) values"
 									 + "(%s, %s, %s, %s)",employeeId, salary, deductions, incomeTax);
 			int payrollRowsUpdated = statement.executeUpdate(sql);
-			if(payrollRowsUpdated == 1) 
+			if(payrollRowsUpdated == 1) {
 				newEmployeePayrollData = new EmployeePayrollData(employeeId, employeeName, salary, startDateList, gender, companyName, phoneNumberList, departmentNameList);
+				System.out.println("Payroll Table Updated");
+			}
 		} catch (SQLException e) {
 			try {
 				connection.rollback();
@@ -376,5 +382,16 @@ public class DatabaseIOService {
 			}
 		}
 		return newEmployeePayrollData;
+	}
+
+	public List<EmployeePayrollData> deleteEmployee(String employeeName) throws DBException {
+		String sqlToDeleteEmployee = String.format("update employee set is_active = false where name = '%s';", employeeName);
+		try(Connection connection = this.establishConnection()){
+			Statement statementToDeleteEmployee = connection.createStatement();
+			int resultSetToDeleteEmployee = statementToDeleteEmployee.executeUpdate(sqlToDeleteEmployee);
+			return this.readData();
+		} catch (SQLException e) {
+			throw new DBException("Cannot establish connection", DBException.ExceptionType.CONNECTION_FAIL);
+		}
 	}
 }
