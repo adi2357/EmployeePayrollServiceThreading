@@ -110,10 +110,9 @@ public class EmployeePayrollService {
 		}
 	}
 
-	public void addEmployeeToPayroll(String name, double salary, LocalDate startDate, String gender) {
+	public void addEmployeeToPayroll(String employeeName, double salary, LocalDate startDate, String gender, String companyName, String phoneNumber, String departmentName) {
 		try {
-			if(this.getEmployeePayrollData(name) == null)
-				this.employeePayrollList.add(employeePayrollDBService.addEmployeeToPayroll(name, salary, startDate, gender));
+			this.employeePayrollList.add(employeePayrollDBService.addEmployeeToPayroll(employeeName, salary, startDate, gender, companyName, phoneNumber, departmentName));
 		} catch (DBException e) {
 			e.printStackTrace();
 		}

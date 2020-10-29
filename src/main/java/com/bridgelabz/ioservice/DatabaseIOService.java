@@ -202,8 +202,13 @@ public class DatabaseIOService {
 		}
 	}
 
-	public EmployeePayrollData addEmployeeToPayroll(String employeeName, double salary, LocalDate startDate, String gender) throws DBException {
+	public EmployeePayrollData addEmployeeToPayroll(String employeeName, double salary, LocalDate startDate, String gender, String companyName, String phoneNumber, String departmentName) throws DBException {
 		int employeeId = -1;
+		int companyId = -1;
+		int departmentId =-1;
+		List<LocalDate> startDateList = new ArrayList<>();
+		List<String> departmentNameList = new ArrayList<>();
+		List<String> phoneNumberList = new ArrayList<>();
 		EmployeePayrollData newEmployeePayrollData = null;
 		Connection connection = null;
 		try {
@@ -216,30 +221,146 @@ public class DatabaseIOService {
 			} catch (SQLException e1) {
 				e1.printStackTrace();
 			}
-			throw new DBException("Cannot establish connection", DBException.ExceptionType.CONNECTION_FAIL);			
 		}
 		try (Statement statement = connection.createStatement()) {
-			String sql = String.format("insert into employee_payroll (name, gender, salary, start) values"
-									 + "('%s', '%s', %s, '%s')", employeeName, gender, salary, Date.valueOf(startDate));
-			int rowsUpdated = statement.executeUpdate(sql, statement.RETURN_GENERATED_KEYS);
-			if(rowsUpdated == 1) {
-				ResultSet resultSet = statement.getGeneratedKeys();
-				if(resultSet.next())
-					employeeId = resultSet.getInt(1);
+			String sqlToRetrieveCompanyId = String.format("select id from company where name = '%s';", companyName);
+			Statement statementToRetrieveCompanyId = connection.createStatement();
+			ResultSet resultSetToRetrieveCompanyId = statementToRetrieveCompanyId.executeQuery(sqlToRetrieveCompanyId);
+			if(resultSetToRetrieveCompanyId.next()) {
+				companyId = resultSetToRetrieveCompanyId.getInt("id");
+				System.out.println("Retrieved company id : "+companyId);
+			}
+			else {
+				String sqlToInsert = String.format("insert into company (name) values ('%s');", companyName);
+				int companyRowsUpdated = statement.executeUpdate(sqlToInsert, statement.RETURN_GENERATED_KEYS);
+				if(companyRowsUpdated == 1) {
+					ResultSet resultSet = statement.getGeneratedKeys();
+					if(resultSet.next())
+						companyId = resultSet.getInt(1);
+				}
+				System.out.println("Inserted company id : "+companyId);
+			}
+		} catch (SQLException e1) {
+			e1.printStackTrace();
+			try {
+				connection.rollback();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
+		try (Statement statement = connection.createStatement()) {
+			String sqlToRetrieveEmployeeId = String.format("select id from employee where name ='%s' and gender = '%s' and company_id = %s;", employeeName, gender, companyId);
+			Statement statementToRetrieveEmployeeId = connection.createStatement();
+			ResultSet resultSetToRetrieveEmployeeId = statementToRetrieveEmployeeId.executeQuery(sqlToRetrieveEmployeeId);
+			if(resultSetToRetrieveEmployeeId.next()) {
+				employeeId = resultSetToRetrieveEmployeeId.getInt("id");
+				System.out.println("Retrieved employee id : "+employeeId);
+			}
+			else {
+				String sqlToInsert = String.format("insert into employee (name, gender, company_id) values "
+										 + "('%s', '%s', %s);", employeeName, gender, companyId);
+				int employeeRowsUpdated = statement.executeUpdate(sqlToInsert, statement.RETURN_GENERATED_KEYS);
+				if(employeeRowsUpdated == 1) {
+					ResultSet resultSet = statement.getGeneratedKeys();
+					if(resultSet.next())
+						employeeId = resultSet.getInt(1);
+				}
+				System.out.println("Inserted employee id : "+employeeId);
 			}
 		} catch (SQLException e) {
-			throw new DBException("Cannot establish connection", DBException.ExceptionType.STATEMENT_FAILURE);
+			try {
+				connection.rollback();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+		}
+		try (Statement statement = connection.createStatement()) {
+			String sqlToRetrievePhone = String.format("select phone_number from employee_phone where employee_id = %s;", employeeId);
+			Statement statementToRetrievePhone = connection.createStatement();
+			ResultSet resultSetToRetrievePhone = statementToRetrievePhone.executeQuery(sqlToRetrievePhone);
+			while(resultSetToRetrievePhone.next()) {
+				phoneNumberList.add(resultSetToRetrievePhone.getString("phone_number"));
+				System.out.println("Phone number retrieved  YES");
+			}if(!phoneNumberList.contains(phoneNumber)) {
+				String sqlToInsert = String.format("insert into employee_phone (employee_id, phone_number) values "
+										 + "('%s', '%s');", employeeId, phoneNumber);
+				int phoneRowsUpdated = statement.executeUpdate(sqlToInsert, statement.RETURN_GENERATED_KEYS);
+				if(phoneRowsUpdated == 1) {
+					phoneNumberList.add(phoneNumber);
+				}
+				System.out.println("Phone number inserted  YES");
+			}
+		} catch (SQLException e) {
+			try {
+				connection.rollback();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+		}
+		try (Statement statement = connection.createStatement()) {
+			String sqlToRetrieveDepartmentId = String.format("select id from department where name = '%s';", departmentName);
+			Statement statementToRetrieveDepartmentId = connection.createStatement();
+			ResultSet resultSetToRetrieveDepartmentId = statementToRetrieveDepartmentId.executeQuery(sqlToRetrieveDepartmentId);
+			if(resultSetToRetrieveDepartmentId.next()) {
+				departmentId = resultSetToRetrieveDepartmentId.getInt("id");
+				System.out.println("Retrieved department id : "+ departmentId);
+			}else {
+				String sqlToInsert = String.format("insert into department (name) values ('%s');", departmentName);
+				int departmentRowsUpdated = statement.executeUpdate(sqlToInsert, statement.RETURN_GENERATED_KEYS);
+				if(departmentRowsUpdated == 1) {
+					ResultSet resultSet = statement.getGeneratedKeys();
+					if(resultSet.next())
+						departmentId = resultSet.getInt(1);
+				}
+				System.out.println("Inserted department id : "+ departmentId);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			try {
+				connection.rollback();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+		}
+		try (Statement statement = connection.createStatement()) {
+			String sqlToRetrieveDateAndDepartment = String.format("select start_date, department_id , department.name as department_name  from employee_department "
+													+ "inner join department on employee_department.department_id = department.id "
+													+ "where employee_id = %s;", employeeId);
+			Statement statementToRetrieveDateAndDepartment = connection.createStatement();
+			ResultSet resultSetToRetrieveDateAndDepartment = statementToRetrieveDateAndDepartment.executeQuery(sqlToRetrieveDateAndDepartment);
+			while(resultSetToRetrieveDateAndDepartment.next()) {
+				startDateList.add(resultSetToRetrieveDateAndDepartment.getDate("start_date").toLocalDate());
+				departmentNameList.add(resultSetToRetrieveDateAndDepartment.getString("department_name"));
+			}if(!startDateList.contains(startDate) || !departmentNameList.contains(departmentName)) {
+				String sqlToInsert = String.format("insert into employee_department (start_date, department_id, employee_id) values "
+										 + "( '%s', %s, %s);", Date.valueOf(startDate), departmentId, employeeId);
+				int employeeDepartmentRowsUpdated = statement.executeUpdate(sqlToInsert, statement.RETURN_GENERATED_KEYS);
+				if(employeeDepartmentRowsUpdated == 1) {
+					startDateList.add(startDate);
+					departmentNameList.add(departmentName);
+				}
+			}
+		} catch (SQLException e) {
+			try {
+				connection.rollback();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
 		}
 		try (Statement statement = connection.createStatement()) {
 			double deductions = salary * 0.2;
 			double incomeTax = (salary - deductions)* 0.1;
 			String sql = String.format("insert into payroll (employee_id, basic_pay, deductions, income_tax) values"
 									 + "(%s, %s, %s, %s)",employeeId, salary, deductions, incomeTax);
-			int rowsUpdated = statement.executeUpdate(sql);
-			if(rowsUpdated == 1) 
+			int payrollRowsUpdated = statement.executeUpdate(sql);
+			if(payrollRowsUpdated == 1) 
 				newEmployeePayrollData = new EmployeePayrollData(employeeId, employeeName, salary, startDateList, gender, companyName, phoneNumberList, departmentNameList);
 		} catch (SQLException e) {
-			throw new DBException("Cannot establish connection", DBException.ExceptionType.STATEMENT_FAILURE);
+			try {
+				connection.rollback();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
 		}
 		try {
 			connection.commit();
