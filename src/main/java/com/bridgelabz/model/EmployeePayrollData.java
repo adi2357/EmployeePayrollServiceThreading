@@ -55,17 +55,17 @@ public class EmployeePayrollData {
 			String departmentName) {
 		this(employeeName, salary, gender, companyName);
 		
-		if (startDates != null)		this.startDates.add(startDate);
+		if (startDates != null)		this.startDates.add(0, startDate);
 		else {
 			this.startDates = new ArrayList<>();
 			this.startDates.add(startDate);
 		}
-		if (phoneNumbers != null)	this.phoneNumbers.add(phoneNumber);
+		if (phoneNumbers != null)	this.phoneNumbers.add(0, phoneNumber);
 		else {
 			this.phoneNumbers = new ArrayList<>();
 			this.phoneNumbers.add(phoneNumber);
 		}
-		if (departmentNames != null)	this.departmentNames.add(departmentName);
+		if (departmentNames != null)	this.departmentNames.add(0, departmentName);
 		else {
 			departmentNames = new ArrayList<>();
 			departmentNames.add(departmentName);
@@ -142,18 +142,10 @@ public class EmployeePayrollData {
 				+ salary + "\t" + "Company Name : " + companyName;
 	}
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((companyName == null) ? 0 : companyName.hashCode());
-		result = prime * result + employeeId;
-		result = prime * result + ((employeeName == null) ? 0 : employeeName.hashCode());
-		result = prime * result + ((gender == null) ? 0 : gender.hashCode());
-		long temp;
-		temp = Double.doubleToLongBits(salary);
-		result = prime * result + (int) (temp ^ (temp >>> 32));
-		return result;
+	public String printString() {
+		return "EmployeePayrollData [employeeId=" + employeeId + ", employeeName=" + employeeName + ", salary=" + salary
+				+ ", startDates=" + startDates + ", gender=" + gender + ", companyName=" + companyName
+				+ ", phoneNumbers=" + phoneNumbers + ", departmentNames=" + departmentNames + "]";
 	}
 
 	@Override

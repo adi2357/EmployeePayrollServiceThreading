@@ -119,15 +119,20 @@ public class EmployeePayrollService {
 
 	public void addEmployeeToPayroll(String employeeName, double salary, LocalDate startDate, String gender, String companyName, String phoneNumber, String departmentName) {
 		try {
-			this.employeePayrollList.add(employeePayrollDBService.addEmployeeToPayroll(employeeName, salary, startDate, gender, companyName, phoneNumber, departmentName));
+			EmployeePayrollData newEmployeeAdded = employeePayrollDBService.addEmployeeToPayroll(employeeName, salary, startDate, gender, companyName, phoneNumber, departmentName); 
+			if(newEmployeeAdded != null) this.employeePayrollList.add(newEmployeeAdded);
 		} catch (DBException e) {
 			e.printStackTrace();
 		}
 	}
 
-	public void addEmployeeListToPayroll(List<EmployeePayrollData> asList) {
-		
-		
+	public void addEmployeeListToPayroll(List<EmployeePayrollData> employeeList) {
+		employeeList.stream().forEach(e -> {
+			System.out.println("\nAdding Employee : " + e.getEmployeeName());
+			this.addEmployeeToPayroll(e.getEmployeeName(), e.getSalary(), e.getStartDates().get(0), e.getGender(),
+									  e.getCompanyName(), e.getPhoneNumbers().get(0), e.getDepartmentNames().get(0));
+			System.out.println("Employee Added : " + e.getEmployeeName()+"\n");
+		});
 	}
 
 	public void deleteEmployee(String employeeName) {
@@ -148,6 +153,6 @@ public class EmployeePayrollService {
 		if (ioType.equals(IOService.FILE_IO))
 			new FileIOService().printEmployeePayrolls();
 		else
-			this.employeePayrollList.stream().forEach(employeeData -> System.out.println(employeeData.toString()));
+			employeePayrollList.stream().forEach(employeeData -> System.out.println(employeeData.printString()));
 	}
 }
