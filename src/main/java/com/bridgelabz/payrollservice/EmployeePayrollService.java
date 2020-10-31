@@ -135,6 +135,11 @@ public class EmployeePayrollService {
 		});
 	}
 
+	public void addEmployeeListToPayrollUsingThreads(List<EmployeePayrollData> asList) {
+		// TODO Auto-generated method stub
+		
+	}
+
 	public void deleteEmployee(String employeeName) {
 		try {
 			this.employeePayrollList = this.employeePayrollDBService.deleteEmployee(employeeName);
@@ -153,6 +158,6 @@ public class EmployeePayrollService {
 		if (ioType.equals(IOService.FILE_IO))
 			new FileIOService().printEmployeePayrolls();
 		else
-			employeePayrollList.stream().forEach(employeeData -> System.out.println(employeeData.printString()));
+			this.employeePayrollList.stream().forEach(employeeData -> System.out.println(employeeData.printString()));
 	}
 }
