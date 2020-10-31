@@ -131,6 +131,7 @@ public class EmployeePayrollServiceTest {
 	public void given6Employees_WhenAddedToDBUsingThreads_ShouldMatchEmployeeCount() {
 		EmployeePayrollService payrollServiceObject = new EmployeePayrollService();
 		payrollServiceObject.readEmployeeData(IOService.DB_IO);
+		System.out.println("--------------ADDING WITHOUT USING THREADS--------------");
 		EmployeePayrollData[] arrayOfEmployees = {
 				new EmployeePayrollData("Tyson", 2000000.0, LocalDate.of(2017,01,01), "M", "Oracle", "7878456214", "Research & Development"),
 				new EmployeePayrollData("Mayira", 4000000.0, LocalDate.of(2017,01,01), "F", "Bridgelabz", "9989956214", "Marketing"),
@@ -139,9 +140,22 @@ public class EmployeePayrollServiceTest {
 				new EmployeePayrollData("Rahel", 3000000.0, LocalDate.of(2019,01,01), "F", "Capgemini", "8889898214", "Sales")
 				};
 		Instant start = Instant.now();
-		payrollServiceObject.addEmployeeListToPayrollUsingThreads(Arrays.asList(arrayOfEmployees));
+		payrollServiceObject.addEmployeeListToPayroll(Arrays.asList(arrayOfEmployees));
 		Instant end = Instant.now();
-		System.out.println("Duration with Threading : " + Duration.between(start, end));
-		Assert.assertEquals(10, payrollServiceObject.sizeOfEmployeeList());
+		System.out.println("Duration without Threading : " + Duration.between(start, end));
+		
+		System.out.println("------------------ADDING USING THREADS------------------");
+		EmployeePayrollData[] arrayOfNewEmployees = {
+				new EmployeePayrollData("Taylor", 4000000.0, LocalDate.of(2016,06,01), "F", "Cognizant", "7878457894", "Operations"),
+				new EmployeePayrollData("Maya", 1000000.0, LocalDate.of(2017,01,01), "F", "Bridgelabz", "9989999904", "Finance"),
+				new EmployeePayrollData("Jamie", 2000000.0, LocalDate.of(2018,01,01), "M", "Infosys", "9287556219", "Operations"),
+				new EmployeePayrollData("Aby", 3000000.0, LocalDate.of(2016,01,01), "F", "Oracle", "9889896994", "Human Resource"),
+				new EmployeePayrollData("Cabel", 2000000.0, LocalDate.of(2020,01,01), "M", "Capgemini", "8889986514", "Business & Ethics")
+				};
+		Instant threadStart = Instant.now();
+		payrollServiceObject.addEmployeeListToPayrollUsingThreads(Arrays.asList(arrayOfNewEmployees));
+		Instant threadEnd = Instant.now();
+		System.out.println("Duration with Threading : " + Duration.between(threadStart, threadEnd));
+		Assert.assertEquals(15, payrollServiceObject.sizeOfEmployeeList());
 	}
 }

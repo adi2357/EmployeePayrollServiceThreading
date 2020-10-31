@@ -168,6 +168,11 @@ public class EmployeePayrollData {
 				return false;
 		} else if (!companyName.equals(other.companyName))
 			return false;
+		if (departmentNames == null) {
+			if (other.departmentNames != null)
+				return false;
+		} else if (!departmentNames.equals(other.departmentNames))
+			return false;
 		if (employeeId != other.employeeId)
 			return false;
 		if (employeeName == null) {
@@ -180,10 +185,18 @@ public class EmployeePayrollData {
 				return false;
 		} else if (!gender.equals(other.gender))
 			return false;
+		if (phoneNumbers == null) {
+			if (other.phoneNumbers != null)
+				return false;
+		} else if (!phoneNumbers.equals(other.phoneNumbers))
+			return false;
 		if (Double.doubleToLongBits(salary) != Double.doubleToLongBits(other.salary))
+			return false;
+		if (startDates == null) {
+			if (other.startDates != null)
+				return false;
+		} else if (!startDates.equals(other.startDates))
 			return false;
 		return true;
 	}
-
-	
 }
