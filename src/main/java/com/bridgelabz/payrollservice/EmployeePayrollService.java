@@ -125,6 +125,11 @@ public class EmployeePayrollService {
 		}
 	}
 
+	public void addEmployeeListToPayroll(List<EmployeePayrollData> asList) {
+		
+		
+	}
+
 	public void deleteEmployee(String employeeName) {
 		try {
 			this.employeePayrollList = this.employeePayrollDBService.deleteEmployee(employeeName);

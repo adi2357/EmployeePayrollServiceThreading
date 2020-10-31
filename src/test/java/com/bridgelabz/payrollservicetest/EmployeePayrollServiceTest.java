@@ -1,5 +1,7 @@
 package com.bridgelabz.payrollservicetest;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
@@ -100,10 +102,28 @@ public class EmployeePayrollServiceTest {
 			EmployeePayrollService payrollServiceObject = new EmployeePayrollService();
 			payrollServiceObject.readEmployeeData(IOService.DB_IO);
 			payrollServiceObject.deleteEmployee("Mark");
-			boolean result = payrollServiceObject.isDeleted("Mark");	
+			boolean result = payrollServiceObject.isDeleted("Mark");
 			Assert.assertTrue(result);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}			
+	}
+
+	@Test
+	public void given6Employees_WhenAddedToDB_ShouldMatchEmployeeCount() {
+		EmployeePayrollService payrollServiceObject = new EmployeePayrollService();
+		payrollServiceObject.readEmployeeData(IOService.DB_IO);
+		EmployeePayrollData[] arrayOfEmployees = {
+				new EmployeePayrollData("Tyson", 2000000.0, LocalDate.of(2017,01,01), "M", "Oracle", "7878456214", "Research & Development"),
+				new EmployeePayrollData("Mayira", 4000000.0, LocalDate.of(2017,01,01), "F", "Bridgelabz", "9989956214", "Marketing"),
+				new EmployeePayrollData("Gabriel", 4000000.0, LocalDate.of(2019,01,01), "Male", "Capgemini", "9299956219", "Business & Ethics"),
+				new EmployeePayrollData("Abel", 2000000.0, LocalDate.of(2018,01,01), "F", "Capgemini", "7889896214", "Human Resource"),
+				new EmployeePayrollData("Rahel", 3000000.0, LocalDate.of(2019,01,01), "F", "Capgemini", "8889898214", "Sales")
+				};
+		Instant start = Instant.now();
+		payrollServiceObject.addEmployeeListToPayroll(Arrays.asList(arrayOfEmployees));
+		Instant end = Instant.now();
+		System.out.println("Duration without Threading : " + Duration.between(start, end));
+		Assert.assertEquals(10, payrollServiceObject.sizeOfEmployeeList());
 	}
 }

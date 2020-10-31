@@ -1,6 +1,7 @@
 package com.bridgelabz.model;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 public class EmployeePayrollData {
@@ -23,6 +24,13 @@ public class EmployeePayrollData {
 		this.salary = salary;
 	}
 
+	public EmployeePayrollData(String employeeName, double salary, String gender, String companyName) {
+		this.employeeName = employeeName;
+		this.salary = salary;
+		this.gender = gender;
+		this.companyName = companyName;
+	}
+
 	public EmployeePayrollData(int employeeId, String employeeName, double salary, List<LocalDate> startDates) {
 		this(employeeId, employeeName, salary);
 		this.startDates = startDates;
@@ -41,6 +49,27 @@ public class EmployeePayrollData {
 		this.companyName = companyName;
 		this.phoneNumbers = phoneNumbers;
 		this.departmentNames = departmentNames;
+	}
+
+	public EmployeePayrollData(String employeeName, double salary, LocalDate startDate, String gender, String companyName, String phoneNumber,
+			String departmentName) {
+		this(employeeName, salary, gender, companyName);
+		
+		if (startDates != null)		this.startDates.add(startDate);
+		else {
+			this.startDates = new ArrayList<>();
+			this.startDates.add(startDate);
+		}
+		if (phoneNumbers != null)	this.phoneNumbers.add(phoneNumber);
+		else {
+			this.phoneNumbers = new ArrayList<>();
+			this.phoneNumbers.add(phoneNumber);
+		}
+		if (departmentNames != null)	this.departmentNames.add(departmentName);
+		else {
+			departmentNames = new ArrayList<>();
+			departmentNames.add(departmentName);
+		}
 	}
 
 	public int getEmployeeId() {
