@@ -141,7 +141,7 @@ public class EmployeePayrollServiceTest {
 		Instant start = Instant.now();
 		payrollServiceObject.addEmployeeListToPayrollUsingThreads(Arrays.asList(arrayOfEmployees));
 		Instant end = Instant.now();
-		System.out.println("Duration without Threading : " + Duration.between(start, end));
+		System.out.println("Duration with Threading : " + Duration.between(start, end));
 		Assert.assertEquals(10, payrollServiceObject.sizeOfEmployeeList());
 	}
 }

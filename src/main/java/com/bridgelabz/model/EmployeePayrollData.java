@@ -3,6 +3,7 @@ package com.bridgelabz.model;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class EmployeePayrollData {
 
@@ -134,6 +135,11 @@ public class EmployeePayrollData {
 
 	public void setDepartmentNames(List<String> departmentNames) {
 		this.departmentNames = departmentNames;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(employeeId, employeeName, salary, startDates, gender, companyName, phoneNumbers, departmentNames);		
 	}
 
 	@Override

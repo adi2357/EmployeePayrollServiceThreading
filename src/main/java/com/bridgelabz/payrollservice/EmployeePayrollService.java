@@ -2,6 +2,7 @@ package com.bridgelabz.payrollservice;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -135,9 +136,27 @@ public class EmployeePayrollService {
 		});
 	}
 
-	public void addEmployeeListToPayrollUsingThreads(List<EmployeePayrollData> asList) {
-		// TODO Auto-generated method stub
-		
+	public void addEmployeeListToPayrollUsingThreads(List<EmployeePayrollData> employeeList) {
+		Map<Integer, Boolean> employeeAdditionStatus = new HashMap<Integer, Boolean>();
+		employeeList.stream().forEach(e -> {
+			Runnable employeeAddition = () -> {
+				employeeAdditionStatus.put(e.hashCode(), false);
+				System.out.println("\nAdding Employee : " + Thread.currentThread().getName());
+				this.addEmployeeToPayroll(e.getEmployeeName(), e.getSalary(), e.getStartDates().get(0), e.getGender(),
+						  e.getCompanyName(), e.getPhoneNumbers().get(0), e.getDepartmentNames().get(0));
+				employeeAdditionStatus.put(e.hashCode(), true);
+				System.out.println("Employee Added : " + Thread.currentThread().getName() + "\n");
+			};
+			Thread thread = new Thread(employeeAddition, e.getEmployeeName());
+			thread.start();
+		});
+		while(employeeAdditionStatus.containsValue(false)) {
+			try {
+				Thread.sleep(10);
+			} catch (InterruptedException e1) {
+				e1.printStackTrace();
+			}
+		}
 	}
 
 	public void deleteEmployee(String employeeName) {
