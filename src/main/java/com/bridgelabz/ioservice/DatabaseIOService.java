@@ -18,6 +18,7 @@ import com.bridgelabz.model.EmployeePayrollData;
 
 public class DatabaseIOService {
 
+	private int connectionCounter = 0;
 	private PreparedStatement employeePayrollDataStatement;
 	private static DatabaseIOService employeeDBService;
 
@@ -34,8 +35,14 @@ public class DatabaseIOService {
 		String jdbcURL = "jdbc:mysql://localhost:3306/payroll_service";
 		String userName = "root";
 		String password = "First12@";
-		System.out.println("Establishing connection to database : " + jdbcURL);
-		return DriverManager.getConnection(jdbcURL, userName, password);
+		Connection connection;
+		connectionCounter++;
+		System.out.println("Processing Thread : " + Thread.currentThread().getName() + 
+						   " Establishing connection to database with Id : " + connectionCounter);
+		connection = DriverManager.getConnection(jdbcURL, userName, password);
+		System.out.println("Processing Thread : " + Thread.currentThread().getName() + 
+						   " Id : " + connectionCounter + " Connection is successfull!!! " + connection);
+		return connection;
 	}
 
 	private void prepareStatementForEmployeeData() throws DBException {
@@ -47,7 +54,6 @@ public class DatabaseIOService {
 					+ "where employee.is_active = true and employee.name = ?;";
 		try {
 			Connection connection = this.establishConnection();
-			System.out.println("Connection is successfull!!! " + connection);
 			this.employeePayrollDataStatement = connection.prepareStatement(sql);
 		}catch (SQLException e) {
 			throw new DBException("Cannot establish connection", DBException.ExceptionType.CONNECTION_FAIL);
@@ -98,7 +104,6 @@ public class DatabaseIOService {
 				+ "group by employee.gender;";
 		Map<String, Double> genderToAverageSalaryMap = new HashMap<>();
 		try (Connection connection = this.establishConnection()) {
-			System.out.println("Connection is successfull!!! " + connection);
 			Statement statement = connection.createStatement();
 			ResultSet resultSet = statement.executeQuery(sql);
 			while (resultSet.next()) {
@@ -116,7 +121,6 @@ public class DatabaseIOService {
 		List<EmployeePayrollData> employeePayrollList = null;
 		try {
 			Connection connection = this.establishConnection();
-			System.out.println("Connection is successfull!!! " + connection);
 			Statement statement = connection.createStatement();
 			ResultSet resultSet = statement.executeQuery(sql);
 			employeePayrollList = this.getEmplyoeePayrollDataUsingResultSet(resultSet);
@@ -179,7 +183,6 @@ public class DatabaseIOService {
 				+ "from employee "
 				+ "where name = ? and is_active = true);";
 		try (Connection connection = this.establishConnection()){
-			System.out.println("Connection is successfull!!! " + connection);
 			PreparedStatement employeePayrollUpdateStatement = connection.prepareStatement(sql);
 			employeePayrollUpdateStatement.setDouble(1,salary);
 			employeePayrollUpdateStatement.setString(2, name);
@@ -196,7 +199,6 @@ public class DatabaseIOService {
 				+ "from employee "
 				+ "where name = '%s' and is_active = true);", salary, name);
 		try (Connection connection = this.establishConnection()) {
-			System.out.println("Connection is successfull!!! " + connection);
 			Statement statement = connection.createStatement();
 			return statement.executeUpdate(sql);
 		} catch (SQLException e) {
@@ -216,7 +218,6 @@ public class DatabaseIOService {
 		try {
 			connection = this.establishConnection();
 			connection.setAutoCommit(false);
-			System.out.println("Connection is successfull!!! " + connection);
 		} catch (SQLException e) {
 			try {
 				connection.rollback();
