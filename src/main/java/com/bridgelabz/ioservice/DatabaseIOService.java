@@ -31,7 +31,7 @@ public class DatabaseIOService {
 		return employeeDBService;
 	}
 
-	private Connection establishConnection() throws SQLException {
+	private synchronized Connection establishConnection() throws SQLException {
 		String jdbcURL = "jdbc:mysql://localhost:3306/payroll_service";
 		String userName = "root";
 		String password = "First12@";
