@@ -207,28 +207,106 @@ public class DatabaseIOService {
 	}
 
 	public EmployeePayrollData addEmployeeToPayroll(String employeeName, double salary, LocalDate startDate, String gender, String companyName, String phoneNumber, String departmentName) throws DBException {
-		int employeeId = -1;
-		int companyId = -1;
-		int departmentId =-1;
-		List<LocalDate> startDateList = new ArrayList<>();
-		List<String> departmentNameList = new ArrayList<>();
-		List<String> phoneNumberList = new ArrayList<>();
-		EmployeePayrollData newEmployeePayrollData = null;
-		Connection connection = null;
+		EmployeePayrollData[] newEmployeePayrollData = new EmployeePayrollData[1];
+		Connection[] connection = new Connection[1];
 		try {
-			connection = this.establishConnection();
-			connection.setAutoCommit(false);
+			connection[0] = this.establishConnection();
+			connection[0].setAutoCommit(false);
 		} catch (SQLException e) {
 			try {
-				connection.rollback();
+				connection[0].rollback();
 			} catch (SQLException e1) {
 				e1.printStackTrace();
 			}
 		}
+		int companyId = insertIntoCompanyTable(connection[0], companyName);
+		int employeeId = insertIntoEmployeeTable(connection[0], employeeName, gender, companyId);
+		int departmentId = insertIntoDepartmentTable(connection[0], departmentName);
+		
+		Map<Integer, Boolean> employeePhoneAdditionStatus = new HashMap<Integer, Boolean>();
+		Runnable employeePhoneAddition = () -> {
+			employeePhoneAdditionStatus.put(employeeId, false);
+			try {
+				boolean isEmployeePhoneUpdated = insertIntoEmployeePhoneTable(connection[0], employeeId, phoneNumber);
+				employeePhoneAdditionStatus.put(employeeId, isEmployeePhoneUpdated);
+			} catch (DBException e) {
+				e.printStackTrace();
+			}
+		};
+		Thread employeePhoneThread = new Thread(employeePhoneAddition);
+		employeePhoneThread.start();
+		while(employeePhoneAdditionStatus.containsValue(false)) {
+			try {
+				Thread.sleep(20);
+			} catch (InterruptedException e1) {
+				e1.printStackTrace();
+			}
+		}
+		
+		Map<Integer, Boolean> employeeDepartmentAdditionStatus = new HashMap<Integer, Boolean>();
+		Runnable employeeDepartmentAddition = () -> {
+			employeeDepartmentAdditionStatus.put(departmentId, false);
+			try {
+				boolean isEmployeeDepartmentUpdated = insertIntoEmployeeDepartment(connection[0], employeeId, departmentName, startDate, departmentId);
+				employeeDepartmentAdditionStatus.put(departmentId, isEmployeeDepartmentUpdated);
+			} catch (DBException e) {
+				e.printStackTrace();
+			}
+		};
+		Thread employeeDepartmentThread = new Thread(employeeDepartmentAddition);
+		employeeDepartmentThread.start();
+		while(employeeDepartmentAdditionStatus.containsValue(false)) {
+			try {
+				Thread.sleep(20);
+			} catch (InterruptedException e1) {
+				e1.printStackTrace();
+			}
+		}
+		
+		Map<Integer, Boolean> employeePayrollAdditionStatus = new HashMap<Integer, Boolean>();
+		Runnable payrollAddition = () -> {
+			employeePayrollAdditionStatus.put(employeeId, false);
+			boolean isPayrollUpdated;
+			try {
+				isPayrollUpdated = insertIntoPayrollTable(connection[0], employeeId, salary);
+				if(isPayrollUpdated) {
+					newEmployeePayrollData[0] = new EmployeePayrollData(employeeId, employeeName, salary, startDate, gender, companyName, phoneNumber, departmentName);
+				}
+				employeePayrollAdditionStatus.put(employeeId, isPayrollUpdated);
+			} catch (DBException e) {
+				e.printStackTrace();
+			}
+		};
+		Thread employeePayrollThread = new Thread(payrollAddition);
+		employeePayrollThread.start();
+		while(employeePayrollAdditionStatus.containsValue(false)) {
+			try {
+				Thread.sleep(20);
+			} catch (InterruptedException e1) {
+				e1.printStackTrace();
+			}
+		}
+		
+		try {
+			connection[0].commit();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		} finally {
+			if (connection != null) {
+				try {
+					connection[0].close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		return newEmployeePayrollData[0];
+	}
+	private int insertIntoCompanyTable(Connection connection, String companyName) {
+		int companyId =-1;
 		try (Statement statement = connection.createStatement()) {
 			String sqlToRetrieveCompanyId = String.format("select id from company where name = '%s';", companyName);
-			Statement statementToRetrieveCompanyId = connection.createStatement();
-			ResultSet resultSetToRetrieveCompanyId = statementToRetrieveCompanyId.executeQuery(sqlToRetrieveCompanyId);
+			ResultSet resultSetToRetrieveCompanyId = statement.executeQuery(sqlToRetrieveCompanyId);
 			if(resultSetToRetrieveCompanyId.next()) {
 				companyId = resultSetToRetrieveCompanyId.getInt("id");
 				System.out.println("Retrieved company id : "+companyId);
@@ -251,10 +329,14 @@ public class DatabaseIOService {
 				e.printStackTrace();
 			}
 		}
+		return companyId;
+	}
+
+	private int insertIntoEmployeeTable(Connection connection, String employeeName, String gender, int companyId) {
+		int employeeId = -1;
 		try (Statement statement = connection.createStatement()) {
 			String sqlToRetrieveEmployeeId = String.format("select id from employee where name ='%s' and gender = '%s' and company_id = %s;", employeeName, gender, companyId);
-			Statement statementToRetrieveEmployeeId = connection.createStatement();
-			ResultSet resultSetToRetrieveEmployeeId = statementToRetrieveEmployeeId.executeQuery(sqlToRetrieveEmployeeId);
+			ResultSet resultSetToRetrieveEmployeeId = statement.executeQuery(sqlToRetrieveEmployeeId);
 			if(resultSetToRetrieveEmployeeId.next()) {
 				employeeId = resultSetToRetrieveEmployeeId.getInt("id");
 				System.out.println("Retrieved employee id : "+employeeId);
@@ -277,10 +359,15 @@ public class DatabaseIOService {
 				e1.printStackTrace();
 			}
 		}
+		return employeeId;
+	}
+
+	private boolean insertIntoEmployeePhoneTable(Connection connection, int employeeId, String phoneNumber) throws DBException{
+		boolean isUpdated = false;
+		List<String> phoneNumberList = new ArrayList<>();
 		try (Statement statement = connection.createStatement()) {
 			String sqlToRetrievePhone = String.format("select phone_number from employee_phone where employee_id = %s;", employeeId);
-			Statement statementToRetrievePhone = connection.createStatement();
-			ResultSet resultSetToRetrievePhone = statementToRetrievePhone.executeQuery(sqlToRetrievePhone);
+			ResultSet resultSetToRetrievePhone = statement.executeQuery(sqlToRetrievePhone);
 			while(resultSetToRetrievePhone.next()) {
 				phoneNumberList.add(resultSetToRetrievePhone.getString("phone_number"));
 				System.out.println("Phone number retrieved : YES");
@@ -290,20 +377,28 @@ public class DatabaseIOService {
 				int phoneRowsUpdated = statement.executeUpdate(sqlToInsert, statement.RETURN_GENERATED_KEYS);
 				if(phoneRowsUpdated == 1) {
 					phoneNumberList.add(phoneNumber);
+					isUpdated = true;
 				}
 				System.out.println("Phone number inserted : YES");
+			}else {
+				isUpdated = true;
 			}
 		} catch (SQLException e) {
+			e.printStackTrace();
 			try {
 				connection.rollback();
 			} catch (SQLException e1) {
 				e1.printStackTrace();
 			}
 		}
+		return isUpdated;
+	}
+
+	private int insertIntoDepartmentTable(Connection connection, String departmentName) {
+		int departmentId = -1;
 		try (Statement statement = connection.createStatement()) {
 			String sqlToRetrieveDepartmentId = String.format("select id from department where name = '%s';", departmentName);
-			Statement statementToRetrieveDepartmentId = connection.createStatement();
-			ResultSet resultSetToRetrieveDepartmentId = statementToRetrieveDepartmentId.executeQuery(sqlToRetrieveDepartmentId);
+			ResultSet resultSetToRetrieveDepartmentId = statement.executeQuery(sqlToRetrieveDepartmentId);
 			if(resultSetToRetrieveDepartmentId.next()) {
 				departmentId = resultSetToRetrieveDepartmentId.getInt("id");
 				System.out.println("Retrieved department id : "+ departmentId);
@@ -325,25 +420,36 @@ public class DatabaseIOService {
 				e1.printStackTrace();
 			}
 		}
+		return departmentId;
+	}
+
+	private boolean insertIntoEmployeeDepartment(Connection connection, int employeeId, String departmentName, LocalDate startDate, int departmentId) throws DBException {
+		boolean isUpdated = false;
+		List<LocalDate> startDateList = new ArrayList<>();
+		List<String> departmentNameList = new ArrayList<>();
 		try (Statement statement = connection.createStatement()) {
 			String sqlToRetrieveDateAndDepartment = String.format("select start_date, department_id , department.name as department_name  from employee_department "
 													+ "inner join department on employee_department.department_id = department.id "
 													+ "where employee_id = %s;", employeeId);
-			Statement statementToRetrieveDateAndDepartment = connection.createStatement();
-			ResultSet resultSetToRetrieveDateAndDepartment = statementToRetrieveDateAndDepartment.executeQuery(sqlToRetrieveDateAndDepartment);
+			ResultSet resultSetToRetrieveDateAndDepartment = statement.executeQuery(sqlToRetrieveDateAndDepartment);
 			while(resultSetToRetrieveDateAndDepartment.next()) {
 				startDateList.add(resultSetToRetrieveDateAndDepartment.getDate("start_date").toLocalDate());
 				departmentNameList.add(resultSetToRetrieveDateAndDepartment.getString("department_name"));
 				System.out.println("Start date and Department name Retrieved : YES");
-			}if(!startDateList.contains(startDate) || !departmentNameList.contains(departmentName)) {
+			}
+			if(!startDateList.contains(startDate) || !departmentNameList.contains(departmentName))  {
 				String sqlToInsert = String.format("insert into employee_department (start_date, department_id, employee_id) values "
 										 + "( '%s', %s, %s);", Date.valueOf(startDate), departmentId, employeeId);
 				int employeeDepartmentRowsUpdated = statement.executeUpdate(sqlToInsert, statement.RETURN_GENERATED_KEYS);
 				if(employeeDepartmentRowsUpdated == 1) {
+					isUpdated = true;
 					startDateList.add(startDate);
 					departmentNameList.add(departmentName);
 					System.out.println("Start date and Department name Inserted : YES");
 				}
+			}
+			else {
+				isUpdated = true;
 			}
 		} catch (SQLException e) {
 			try {
@@ -352,6 +458,11 @@ public class DatabaseIOService {
 				e1.printStackTrace();
 			}
 		}
+		return isUpdated;
+	}
+
+	public boolean insertIntoPayrollTable(Connection connection, int employeeId, double salary) throws DBException {
+		boolean isUpdated = false;
 		try (Statement statement = connection.createStatement()) {
 			double deductions = salary * 0.2;
 			double incomeTax = (salary - deductions)* 0.1;
@@ -359,7 +470,7 @@ public class DatabaseIOService {
 									 + "(%s, %s, %s, %s)",employeeId, salary, deductions, incomeTax);
 			int payrollRowsUpdated = statement.executeUpdate(sql);
 			if(payrollRowsUpdated == 1) {
-				newEmployeePayrollData = new EmployeePayrollData(employeeId, employeeName, salary, startDateList, gender, companyName, phoneNumberList, departmentNameList);
+				isUpdated = true;
 				System.out.println("Payroll Table Updated");
 			}
 		} catch (SQLException e) {
@@ -369,20 +480,7 @@ public class DatabaseIOService {
 				e1.printStackTrace();
 			}
 		}
-		try {
-			connection.commit();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} finally {
-			if (connection != null) {
-				try {
-					connection.close();
-				} catch (SQLException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-		return newEmployeePayrollData;
+		return isUpdated;
 	}
 
 	public List<EmployeePayrollData> deleteEmployee(String employeeName) throws DBException {

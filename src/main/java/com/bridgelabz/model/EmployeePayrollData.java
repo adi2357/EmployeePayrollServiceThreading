@@ -33,23 +33,43 @@ public class EmployeePayrollData {
 	}
 
 	public EmployeePayrollData(int employeeId, String employeeName, double salary, List<LocalDate> startDates) {
+		
 		this(employeeId, employeeName, salary);
-		this.startDates = startDates;
+		
+		if (this.startDates != null)		this.startDates.addAll(startDates);
+		else {
+			this.startDates = new ArrayList<>();
+			this.startDates.addAll(startDates);
+		}
 	}
 
 	
 	public EmployeePayrollData(int employeeId, String employeeName, double salary, List<LocalDate> startDates, String gender) {
+		
 		this(employeeId, employeeName, salary, startDates);
+		
 		this.gender = gender;
 	}
 	
 
 	public EmployeePayrollData(int employeeId, String employeeName, double salary, List<LocalDate> startDates,
 			String gender, String companyName, List<String> phoneNumbers, List<String> departmentNames) {
+		
 		this(employeeId, employeeName, salary, startDates, gender);
+		
 		this.companyName = companyName;
-		this.phoneNumbers = phoneNumbers;
-		this.departmentNames = departmentNames;
+		
+		if (this.phoneNumbers != null)	this.phoneNumbers.addAll(phoneNumbers);
+		else {
+			this.phoneNumbers = new ArrayList<>();
+			this.phoneNumbers.addAll(phoneNumbers);
+		}
+		
+		if (this.departmentNames != null)	this.departmentNames.addAll(departmentNames);
+		else {
+			this.departmentNames = new ArrayList<>();
+			this.departmentNames.addAll(departmentNames);
+		}
 	}
 
 	public EmployeePayrollData(String employeeName, double salary, LocalDate startDate, String gender, String companyName, String phoneNumber,
@@ -68,10 +88,18 @@ public class EmployeePayrollData {
 		}
 		if (departmentNames != null)	this.departmentNames.add(0, departmentName);
 		else {
-			departmentNames = new ArrayList<>();
-			departmentNames.add(departmentName);
+			this.departmentNames = new ArrayList<>();
+			this.departmentNames.add(departmentName);
 		}
 	}
+
+	public EmployeePayrollData(int employeeId, String employeeName, double salary, LocalDate startDate, String gender, String companyName, String phoneNumber,
+			String departmentName) {
+		this(employeeName, salary, startDate, gender, companyName, phoneNumber,
+				departmentName);
+		this.employeeId = employeeId;
+	}
+	
 
 	public int getEmployeeId() {
 		return employeeId;
