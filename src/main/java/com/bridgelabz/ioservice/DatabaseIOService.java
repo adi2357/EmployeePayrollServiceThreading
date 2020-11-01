@@ -177,7 +177,7 @@ public class DatabaseIOService {
 		return this.updateEmployeeDataUsingPreparedStatement(name, salary);
 	}
 
-	private int updateEmployeeDataUsingPreparedStatement(String name, double salary) throws DBException {
+	private synchronized int updateEmployeeDataUsingPreparedStatement(String name, double salary) throws DBException {
 		String sql = "update payroll set basic_pay = ? where employee_id = "
 				+ "(select employee.id "
 				+ "from employee "

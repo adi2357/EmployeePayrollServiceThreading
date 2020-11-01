@@ -90,6 +90,33 @@ public class EmployeePayrollService {
 			throw new DBException("Cannot find the employee payroll data", DBException.ExceptionType.INVALID_PAYROLL_DATA);
 	}
 
+
+	public void updateMultipleEmployeesSalary(Map<String, Double> employeesSalaries) {
+		Map<Integer, Boolean> salaryUpdationStatus = new HashMap<Integer, Boolean>();
+		employeesSalaries.forEach((employee, salary) -> {
+			Runnable salaryUpdation = () -> {
+				try {
+					salaryUpdationStatus.put(employee.hashCode(), false);
+					System.out.println("\nUpdating Salary of Employee : " + Thread.currentThread().getName());
+					updateEmployeeSalary(employee, salary);
+					System.out.println("Updated Salary of Employee : " + Thread.currentThread().getName()+"\n");
+					salaryUpdationStatus.put(employee.hashCode(), true);
+				} catch (DBException e) {
+					e.printStackTrace();
+				}
+			};
+			Thread thread = new Thread(salaryUpdation, employee);
+			thread.start();
+		});
+		while (salaryUpdationStatus.containsValue(false)) {
+			try {
+				Thread.sleep(10);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
 	private EmployeePayrollData getEmployeePayrollData(String name) {
 		return this.employeePayrollList.stream()
 				   .filter(employeeData -> employeeData.getEmployeeName().equals(name))
