@@ -39,7 +39,7 @@ public class EmployeePayrollServiceTest {
 
 		EmployeePayrollService payrollServiceObject = new EmployeePayrollService();
 		payrollServiceObject.readEmployeeData(IOService.FILE_IO);
-		int countOfEntriesRead = payrollServiceObject.sizeOfEmployeeList();
+		int countOfEntriesRead = (int) payrollServiceObject.countEnteries(IOService.DB_IO);
 		Assert.assertEquals(3, countOfEntriesRead);
 	}
 
@@ -48,7 +48,7 @@ public class EmployeePayrollServiceTest {
 
 		EmployeePayrollService payrollServiceObject = new EmployeePayrollService();
 		payrollServiceObject.readEmployeeData(IOService.DB_IO);
-		int countOfEntriesRetrieved = payrollServiceObject.sizeOfEmployeeList();
+		int countOfEntriesRetrieved = (int) payrollServiceObject.countEnteries(IOService.DB_IO);
 		Assert.assertEquals(5, countOfEntriesRetrieved);
 	}
 
@@ -125,7 +125,7 @@ public class EmployeePayrollServiceTest {
 		payrollServiceObject.addEmployeeListToPayroll(Arrays.asList(arrayOfEmployees));
 		Instant end = Instant.now();
 		System.out.println("Duration without Threading : " + Duration.between(start, end));
-		Assert.assertEquals(10, payrollServiceObject.sizeOfEmployeeList());
+		Assert.assertEquals(10, payrollServiceObject.countEnteries(IOService.DB_IO));
 	}
 
 	@Test
@@ -157,7 +157,7 @@ public class EmployeePayrollServiceTest {
 		payrollServiceObject.addEmployeeListToPayrollUsingThreads(Arrays.asList(arrayOfNewEmployees));
 		Instant threadEnd = Instant.now();
 		System.out.println("Duration with Threading : " + Duration.between(threadStart, threadEnd));
-		Assert.assertEquals(15, payrollServiceObject.sizeOfEmployeeList());
+		Assert.assertEquals(15, payrollServiceObject.countEnteries(IOService.DB_IO));
 	}
 
 	@Test

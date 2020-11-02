@@ -15,7 +15,7 @@ import com.bridgelabz.model.EmployeePayrollData;
 public class EmployeePayrollService {
 
 	public enum IOService {
-		CONSOLE_IO, FILE_IO, DB_IO, REST_IO
+		CONSOLE_IO, FILE_IO, DB_IO, JSON_IO, REST_IO
 	}
 
 	public static final Scanner SC = new Scanner(System.in);
@@ -30,10 +30,6 @@ public class EmployeePayrollService {
 	public EmployeePayrollService(List<EmployeePayrollData> employeeList) {
 		this();
 		this.employeePayrollList = employeeList;
-	}
-
-	public int sizeOfEmployeeList() {
-		return this.employeePayrollList.size();
 	}
 
 	public void readEmployeeData(IOService ioType) {
@@ -144,7 +140,7 @@ public class EmployeePayrollService {
 			new FileIOService().writeData(employeePayrollList);
 		}
 	}
-
+	
 	public void addEmployeeToPayroll(String employeeName, double salary, LocalDate startDate, String gender, String companyName, String phoneNumber, String departmentName) {
 		try {
 			EmployeePayrollData newEmployeeAdded = employeePayrollDBService.addEmployeeToPayroll(employeeName, salary, startDate, gender, companyName, phoneNumber, departmentName); 
@@ -197,7 +193,8 @@ public class EmployeePayrollService {
 	public long countEnteries(IOService ioType) {
 		if (ioType.equals(IOService.FILE_IO))
 			return new FileIOService().countEntries();
-		return 0;
+		else
+			return this.employeePayrollList.size();
 	}
 
 	public void printEmployeePayrollData(IOService ioType) {
